@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RPG.Inventories
@@ -70,12 +71,21 @@ namespace RPG.Inventories
 
         public void PickupItem()
         {
+
+            var keys = items.Keys;
+            foreach (var key in keys.ToList())
+            {
+                bool foundSlot = inventory.AddToFirstEmptySlot(key, items[key]);
+                if(!foundSlot) return;
+                items.Remove(key);
+            }
+            /*
             foreach (var item in items)
             {
                 bool foundSlot = inventory.AddToFirstEmptySlot(item.Key, item.Value);    
                 if(!foundSlot) return;
                 items.Remove(item.Key);
-            }
+            }*/
             Destroy(gameObject);
         }
 

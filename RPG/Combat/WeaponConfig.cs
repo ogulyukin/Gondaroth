@@ -14,7 +14,7 @@ namespace RPG.Combat
         [SerializeField] private Projectile projectile;
         [SerializeField] private AnimatorOverrideController animatorOverride;
         [SerializeField] private float weaponDamage;
-        [SerializeField] private float weaponParryChance = 0;
+        [SerializeField] private float weaponParryChance;
         [SerializeField] private float avoidChance = 50f;
         [SerializeField] private float weaponRange;
         [SerializeField] private float weaponTimeout;
@@ -30,7 +30,7 @@ namespace RPG.Combat
 
         public bool CanAvoid()
         {
-            return weaponPrefab == null ? true : false;
+            return ReferenceEquals(weaponPrefab, null);
         }
 
         public float GetWeaponDamage()
@@ -42,17 +42,17 @@ namespace RPG.Combat
             DestroyOldWeapon(rightHandTransform, leftHandTransform);
 
             Weapon weapon = null;
-            if (weaponPrefab != null)
+            if (!ReferenceEquals(weaponPrefab, null))
             {
                 weapon = Instantiate(weaponPrefab, isRightHanded ? rightHandTransform : leftHandTransform);
                 weapon.gameObject.name = WeaponName;
             }
             var overrideController = animator.runtimeAnimatorController as AnimatorOverrideController;
-            if (animatorOverride != null)
+            if (!ReferenceEquals(animatorOverride, null))
             {
                 animator.runtimeAnimatorController = animatorOverride;
             }
-            else if (overrideController != null)
+            else if (!ReferenceEquals(overrideController, null))
             {
                 animator.runtimeAnimatorController = overrideController.runtimeAnimatorController;
             }
@@ -62,8 +62,8 @@ namespace RPG.Combat
         private void DestroyOldWeapon(Transform rightHand, Transform leftHand)
         {
             var oldWeapon = rightHand.Find(WeaponName);
-            if (oldWeapon == null) oldWeapon = leftHand.Find(WeaponName);
-            if (oldWeapon != null)
+            if (ReferenceEquals(oldWeapon, null)) oldWeapon = leftHand.Find(WeaponName);
+            if (!ReferenceEquals(oldWeapon, null))
             {
                 oldWeapon.name = "Destroyed";
                 Destroy(oldWeapon.gameObject);

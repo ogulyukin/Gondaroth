@@ -62,7 +62,7 @@ namespace RPG.Stats
             }
             UpdateMainStats();
             var equipment = GetComponent<Equipment>();
-            if(equipment != null) equipment.equipmentUpdated += UpdateMainStats;
+            if(equipment != null) equipment.EquipmentUpdated += UpdateMainStats;
         }
 
         public bool IsNpc()
