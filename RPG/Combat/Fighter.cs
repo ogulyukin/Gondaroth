@@ -75,7 +75,7 @@ namespace RPG.Combat
                 _isDefending = false;
                 return;
             }
-            if(ReferenceEquals(_target, null) || !_target.IsAlive()) return;
+            if(_target == null || !_target.IsAlive()) return;
             if (!GetIsInRange(_target.transform))
             {
                 _mover.Moveto(_target.transform.position);
@@ -128,7 +128,7 @@ namespace RPG.Combat
         }
         public bool CanAttack(CombatTarget combat)
         {
-            if (ReferenceEquals(combat, null) || (!_mover.CanMoveTo(combat.transform.position) && !GetIsInRange(combat.transform))) return false;
+            if (combat == null || (!_mover.CanMoveTo(combat.transform.position) && !GetIsInRange(combat.transform))) return false;
             return combat.GetComponent<Health>().IsAlive();
         }
 

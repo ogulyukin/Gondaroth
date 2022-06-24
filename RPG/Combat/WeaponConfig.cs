@@ -42,17 +42,17 @@ namespace RPG.Combat
             DestroyOldWeapon(rightHandTransform, leftHandTransform);
 
             Weapon weapon = null;
-            if (!ReferenceEquals(weaponPrefab, null))
+            if (weaponPrefab != null)
             {
                 weapon = Instantiate(weaponPrefab, isRightHanded ? rightHandTransform : leftHandTransform);
                 weapon.gameObject.name = WeaponName;
             }
             var overrideController = animator.runtimeAnimatorController as AnimatorOverrideController;
-            if (!ReferenceEquals(animatorOverride, null))
+            if (animatorOverride != null)
             {
                 animator.runtimeAnimatorController = animatorOverride;
             }
-            else if (!ReferenceEquals(overrideController, null))
+            else if (overrideController != null)
             {
                 animator.runtimeAnimatorController = overrideController.runtimeAnimatorController;
             }
@@ -62,8 +62,8 @@ namespace RPG.Combat
         private void DestroyOldWeapon(Transform rightHand, Transform leftHand)
         {
             var oldWeapon = rightHand.Find(WeaponName);
-            if (ReferenceEquals(oldWeapon, null)) oldWeapon = leftHand.Find(WeaponName);
-            if (!ReferenceEquals(oldWeapon, null))
+            if (oldWeapon == null) oldWeapon = leftHand.Find(WeaponName);
+            if (oldWeapon != null)
             {
                 oldWeapon.name = "Destroyed";
                 Destroy(oldWeapon.gameObject);

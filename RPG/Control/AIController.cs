@@ -20,6 +20,7 @@ namespace RPG.Control
         private float _timeSinceLastSawPlayer = Mathf.Infinity;
         private float _timeSinceArriveAtWaypoint = Mathf.Infinity;
         private float _timeSinceAggrevated = Mathf.Infinity;
+        private ActionScheduler _actionScheduler;
         private const float WaypointTolerance = 1f;
         private GameObject _player;
         private CombatTarget _target;
@@ -36,6 +37,7 @@ namespace RPG.Control
             _mover = GetComponent<Mover>();
             _health = GetComponent<Health>();
             _navMeshAgent = GetComponent<NavMeshAgent>();
+            _actionScheduler = GetComponent<ActionScheduler>();
         }
 
         private void Start()
@@ -67,7 +69,7 @@ namespace RPG.Control
         private void PatrolBehaviour()
         {
             //Vector3 nextPosition = m_GuardPosition;
-            if (patrolPath == null)
+            if (ReferenceEquals(patrolPath, null))
             {
                 _mover.StartMoving(_guardPosition);
                 return;
@@ -112,7 +114,7 @@ namespace RPG.Control
 
         private void SuspicionBehavior()
         {
-            GetComponent<ActionScheduler>().CancelCurrentAction();
+            _actionScheduler.CancelCurrentAction();
             _timeSinceLastSawPlayer += Time.deltaTime;
         }
 
