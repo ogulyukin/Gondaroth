@@ -52,13 +52,17 @@ namespace RPG.Magic
             _actionScheduler.StartAction(this);
             _animator.ResetTrigger(StopCasting);
             _animator.SetTrigger(_currentSpell.GetAnimationWay() ? Cast01 : Cast2Start);
-            var temp = _currentSpell.Cast(this.transform, this.transform);
-            _mana.SpendMana(temp);
+            _mana.SpendMana(_currentSpell.GetManaCost());
         }
 
         private void ChangeCurrentSpell(ISpell spell)
         {
             _currentSpell = spell;
+        }
+        //Animation Event
+        public void SuccessfulSpellCasting()
+        {
+            _currentSpell.Cast(this.transform, this.transform);
         }
 
     }

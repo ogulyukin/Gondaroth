@@ -5,20 +5,8 @@ using UnityEngine;
 
 namespace RPG.Magic
 {
-    public class SpellMagicFog : MonoBehaviour, ISpell
+    public class SpellMagicFog : SpellTemplate, ISpell
     {
-        [SerializeField] float manaCost;
-        [SerializeField] private bool mainAnimation;
-        
-        [SerializeField] private SpellEffectTargets targets;
-        [SerializeField] private float duration;
-        [SerializeField] private bool stunningEffect;
-        [SerializeField] private bool charmEffect;
-        [SerializeField] private bool silenceEffect;
-        [SerializeField] private bool sleepEffect;
-        [SerializeField] private float healEffect;
-        [SerializeField] private float damageEffect;
-        
         [SerializeField] private Material magicFogMaterial;
         [SerializeField] private float fogStartSize = 5;
         [SerializeField] private Color fogColor = Color.white;
@@ -42,7 +30,7 @@ namespace RPG.Magic
             }
         }
 
-        public float Cast(Transform target, Transform caster)
+        public void Cast(Transform target, Transform caster)
         {
             var cloudGO = new GameObject()
             {
@@ -92,19 +80,12 @@ namespace RPG.Magic
             var spellType = cloudGO.AddComponent<SpellEffect>();
             //spellType.spellType = Core.Spells.MagicFog;
             CreteMagicEffect(spellType, caster.GetComponent<CombatTarget>().GetUnitType());
-            return manaCost;
         }
         
         public bool CanCast(float mana)
         {
             return mana >= manaCost;
         }
-
-        public bool GetAnimationWay()
-        {
-            return mainAnimation;
-        }
-
 
         private void CreteMagicEffect(SpellEffect spellType, UnitTypes caster)
         {

@@ -10,6 +10,7 @@ namespace RPG.Attributes
         private float _manaPoints;
         [SerializeField] private Slider manaSlider;
         [SerializeField] private TMP_Text manaText;
+        [SerializeField] private float manaRegenerationRate = 0.01f;
         private BaseStats _baseStats;
 
         private void Awake()
@@ -24,7 +25,7 @@ namespace RPG.Attributes
         }
         private void Update()
         {
-            RestoreMana(0.01f);
+            RestoreMana(manaRegenerationRate);
         }
 
         public float GetCurrentManaLevel()

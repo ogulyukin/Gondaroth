@@ -1,33 +1,42 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
-namespace RPG.Magic
-{
-    public class Elf_ParticleControl : MonoBehaviour {
+public class Elf_ParticleControl : MonoBehaviour {
 
-        public GameObject spearSmash;                                               // Magic spell
-        public ParticleSystem[] castParticles;
-        public Transform spearBase;
-    
-        public void SpearSmash()
+    public GameObject spearSmash;                                               // Magic spell
+    public ParticleSystem[] castParticles;
+    public Transform spearBase;
+
+	// Use this for initialization
+	void Start () {
+		
+	}
+	
+	// Update is called once per frame
+	void Update () {
+		
+	}
+
+    public void SpearSmash()
+    {
+        GameObject newObject = Instantiate(spearSmash, spearBase.position, Quaternion.identity);
+        Destroy(newObject, 5.0f);
+    }
+
+    public void CastStart()
+    {
+        for (int i = 0; i < castParticles.Length; i++)
         {
-            GameObject newObject = Instantiate(spearSmash, spearBase.position, Quaternion.identity);
-            Destroy(newObject, 5.0f);
+            castParticles[i].Play();
         }
+    }
 
-        public void CastStart()
+    public void CastEnd()
+    {
+        for (int i = 0; i < castParticles.Length; i++)
         {
-            for (int i = 0; i < castParticles.Length; i++)
-            {
-                castParticles[i].Play();
-            }
-        }
-
-        public void CastEnd()
-        {
-            for (int i = 0; i < castParticles.Length; i++)
-            {
-                castParticles[i].Stop();
-            }
+            castParticles[i].Stop();
         }
     }
 }
