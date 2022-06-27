@@ -1,8 +1,8 @@
 using RPG.Attributes;
 using RPG.Combat;
 using RPG.Core;
+using RPG.Magic;
 using RPG.Movement;
-using RPG.Spells;
 using RPG.UI;
 using UnityEngine;
 using UnityEngine.AI;

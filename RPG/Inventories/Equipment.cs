@@ -4,7 +4,6 @@ using RPG.Combat;
 using RPG.Stats;
 using Saving;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace RPG.Inventories
 {
@@ -19,7 +18,7 @@ namespace RPG.Inventories
         private string _helmetName = "helm";
         private string _shieldName = "shield"; 
         // STATE
-        Dictionary<EquipLocation, EquipableItem> equippedItems = new Dictionary<EquipLocation, EquipableItem>();
+        Dictionary<EquipLocation, EquipableItem> _equippedItems = new Dictionary<EquipLocation, EquipableItem>();
 
         private void Start()
         {
@@ -27,7 +26,7 @@ namespace RPG.Inventories
             if(GetItemInSlot(EquipLocation.Body) == null) ToggleDefault(true, EquipLocation.Body);
             if(GetItemInSlot(EquipLocation.Trousers) == null) ToggleDefault(true, EquipLocation.Trousers);
             if(GetItemInSlot(EquipLocation.Helmet) == null) ToggleDefault(true, EquipLocation.Helmet);
-            equipmentUpdated?.Invoke();
+            EquipmentUpdated?.Invoke();
             Debug.Log($"Start ends {gameObject.name}");
         }
         // PUBLIC
@@ -35,24 +34,24 @@ namespace RPG.Inventories
         /// <summary>
         /// Broadcasts when the items in the slots are added/removed.
         /// </summary>
-        public event Action equipmentUpdated;
+        public event Action EquipmentUpdated;
 
         /// <summary>
         /// Return the item in the given equip location.
         /// </summary>
         public EquipableItem GetItemInSlot(EquipLocation equipLocation)
         {
-            if (!equippedItems.ContainsKey(equipLocation))
+            if (!_equippedItems.ContainsKey(equipLocation))
             {
                 return null;
             }
 
-            return equippedItems[equipLocation];
+            return _equippedItems[equipLocation];
         }
 
         public bool IsItemEquipped(EquipLocation location)
         {
-            return equippedItems.ContainsKey(location);
+            return _equippedItems.ContainsKey(location);
         }
 
         /// <summary>
@@ -67,10 +66,10 @@ namespace RPG.Inventories
                 return;
             }
             Debug.Assert(item.GetAllowedEquipLocation() == slot);
-            equippedItems[slot] = item;
+            _equippedItems[slot] = item;
             ToggleDefault(false, slot);
             ShowHideWearables(item.GetItemPrefabIndexes(), true);
-            equipmentUpdated?.Invoke();
+            EquipmentUpdated?.Invoke();
             if (item.IsExternal())
             {
                 CreateItem(slot, item);
@@ -91,22 +90,18 @@ namespace RPG.Inventories
             }
         }
 
-        private void DestroyItem(EquipLocation slot, EquipableItem item)
+        private void DestroyItem(EquipLocation slot)
         {
             if (slot == EquipLocation.Helmet)
             {
-                DestroyNamedItem(_helmetName);
+                var tempItem = GetComponent<ArmorList>().head.Find(_helmetName);
+                if (tempItem != null) Destroy(tempItem.gameObject);
             }
             if (slot == EquipLocation.Shield)
             {
-                DestroyNamedItem(_shieldName);
+                var tempItem = GetComponent<ArmorList>().shield.Find(_shieldName);
+                if (tempItem != null) Destroy(tempItem.gameObject);
             }
-        }
-
-        private void DestroyNamedItem(string itemName)
-        {
-            var tempItem = GetComponent<ArmorList>().head.Find(itemName);
-            if (tempItem != null) Destroy(tempItem.gameObject);
         }
 
         private void ShowHideWearables(int[] indexes, bool flag)
@@ -122,39 +117,38 @@ namespace RPG.Inventories
         /// </summary>
         public void RemoveItem(EquipLocation slot)
         {
-            if (equippedItems.ContainsKey(slot))
+            if (_equippedItems.ContainsKey(slot))
             {
-                ShowHideWearables(equippedItems[slot].GetItemPrefabIndexes(),false);
-                var item = equippedItems[slot];
-                equippedItems.Remove(slot);
+                ShowHideWearables(_equippedItems[slot].GetItemPrefabIndexes(),false);
+                var item = _equippedItems[slot];
+                _equippedItems.Remove(slot);
                 if (item.IsExternal() && item != null)
                 {
-                    DestroyItem(slot, item);
+                    DestroyItem(slot);
                 }
             }
             
             ToggleDefault(true, slot);
-            equipmentUpdated?.Invoke();
+            EquipmentUpdated?.Invoke();
         }
 
         /// <summary>
         /// Enumerate through all the slots that currently contain items.
         /// </summary>
-        public IEnumerable<EquipLocation> GetAllPopulatedSlots()
+        protected IEnumerable<EquipLocation> GetAllPopulatedSlots()
         {
-            return equippedItems.Keys;
+            return _equippedItems.Keys;
         }
-
+        /*
         private void CheckBeforeRemoveDefault()
         {
-            if (!equippedItems.ContainsKey(EquipLocation.Body) &&
-                !equippedItems.ContainsKey(EquipLocation.ClothesUpward)) ToggleDefault(true, EquipLocation.Body);
-            if(!equippedItems.ContainsKey(EquipLocation.Trousers) && !equippedItems.ContainsKey(EquipLocation.ClothesDownward)) ToggleDefault(true, EquipLocation.Trousers);
-        }
+            if (!_equippedItems.ContainsKey(EquipLocation.Body) &&
+                !_equippedItems.ContainsKey(EquipLocation.ClothesUpward)) ToggleDefault(true, EquipLocation.Body);
+            if(!_equippedItems.ContainsKey(EquipLocation.Trousers) && !_equippedItems.ContainsKey(EquipLocation.ClothesDownward)) ToggleDefault(true, EquipLocation.Trousers);
+        }*/
         // PRIVATE
         private void ToggleDefault(bool flag, EquipLocation location)
         {
-            //Debug.Log($"Call ToggleDefault: {flag} : {location}");
             switch (location)
             {
                 case EquipLocation.Helmet:
@@ -178,10 +172,8 @@ namespace RPG.Inventories
 
         private static void ToggleDefaultItems(bool flag, GameObject[] items)
         {
-            //Debug.Log($"Insade Toggle: {flag} : {items.Length}");
             foreach (var item in items)
             {
-                //Debug.Log($"Add item: {flag} : {item.name}");
                 item.SetActive(flag);
             }
         }
@@ -191,12 +183,12 @@ namespace RPG.Inventories
             if (item.GetStrengthRequired() > GetComponent<BaseStats>().GetStat(MainStats.Strength)) return false;
             if (location == EquipLocation.Shield)
             {
-                if (!equippedItems.ContainsKey(EquipLocation.Weapon)) return true;
-                var weapon = (WeaponConfig)equippedItems[EquipLocation.Weapon];
+                if (!_equippedItems.ContainsKey(EquipLocation.Weapon)) return true;
+                var weapon = (WeaponConfig)_equippedItems[EquipLocation.Weapon];
                 return weapon.GetWeaponHand();
             }else if (location == EquipLocation.Weapon)
             {
-                if (!equippedItems.ContainsKey(EquipLocation.Shield)) return true;
+                if (!_equippedItems.ContainsKey(EquipLocation.Shield)) return true;
                 return ((WeaponConfig)item).GetWeaponHand();
             }
             
@@ -205,7 +197,7 @@ namespace RPG.Inventories
         object ISaveable.CaptureState()
         {
             var equippedItemsForSerialization = new Dictionary<EquipLocation, string>();
-            foreach (var pair in equippedItems)
+            foreach (var pair in _equippedItems)
             {
                 equippedItemsForSerialization[pair.Key] = pair.Value.GetItemID();
             }
@@ -214,7 +206,7 @@ namespace RPG.Inventories
 
         void ISaveable.RestoreState(object state)
         {
-            equippedItems = new Dictionary<EquipLocation, EquipableItem>();
+            _equippedItems = new Dictionary<EquipLocation, EquipableItem>();
 
             var equippedItemsForSerialization = (Dictionary<EquipLocation, string>)state;
 
@@ -223,7 +215,7 @@ namespace RPG.Inventories
                 var item = (EquipableItem)InventoryItem.GetFromID(pair.Value);
                 if (item != null)
                 {
-                    equippedItems[pair.Key] = item;
+                    _equippedItems[pair.Key] = item;
                 }
             }
         }

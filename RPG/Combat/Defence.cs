@@ -17,22 +17,43 @@ namespace RPG.Combat
         [SerializeField] private TMP_Text armorUIText; //for player
         private Fighter _fighter;
         private BaseStats _stats;
+        private Dictionary<string, bool> _defenceResults;
+
         private void Start()
         {
             _fighter = GetComponent<Fighter>();
             _stats = GetComponent<BaseStats>();
+            _defenceResults = new Dictionary<string, bool>();
             if (armorUIText != null)
             {
                 armorUIText.text = $"{_stats.GetStat(MainStats.Armor)}";
-                GetComponent<Equipment>().equipmentUpdated += UpdateArmorUIText;
+                GetComponent<Equipment>().EquipmentUpdated += UpdateArmorUIText;
             }
         }
 
-        public void GetAttack(float chance, float damage, GameObject instigator)
+        public void GotHit(string attackId, float damage, GameObject instigator)
+        {
+            if (_defenceResults.ContainsKey(attackId))
+            {
+                Debug.Log($"{gameObject}: Founded defence result: {_defenceResults[attackId]}");
+                if (_defenceResults[attackId])
+                {
+                    _defenceResults.Remove(attackId);
+                    return;
+                }    
+            }
+            instigator.GetComponent<BaseStats>().SkillGain(instigator.GetComponent<Fighter>().GetWeaponSkill());
+            GetComponent<Health>().TakeDamage(damage - _stats.GetStat(MainStats.Armor));
+            Debug.Log($"{gameObject.name}: Damage: {damage} Armor: {_stats.GetStat(MainStats.Armor)}");
+            _defenceResults.Remove(attackId);
+            _fighter.GotHit();
+        }
+
+        public void GetAttack(float chance, float damage, GameObject instigator, string attackId)
         {
             if (_fighter.CanAvoid())
             {
-                TryDefenceSkill(chance, damage, instigator, SkillNames.Evade, MainStats.Evade);
+                _defenceResults.Add(attackId, TryDefenceSkill(chance, damage, instigator, SkillNames.Evade, MainStats.Evade));
                 return;
             }
 
@@ -41,17 +62,17 @@ namespace RPG.Combat
             {
                 if (equipment.IsItemEquipped(EquipLocation.Shield))
                 {
-                    TryDefenceSkill(chance, damage, instigator, SkillNames.Block, MainStats.Block);
+                    _defenceResults.Add(attackId, TryDefenceSkill(chance, damage, instigator, SkillNames.Block, MainStats.Block));
                     return;
                 }
             }
 
             if (blockModifier > 0)
             {
-                TryDefenceSkill(chance, damage, instigator, SkillNames.Block, MainStats.Block);
+                _defenceResults.Add(attackId, TryDefenceSkill(chance, damage, instigator, SkillNames.Block, MainStats.Block));
                 return;
             }
-            TryDefenceSkill(chance, damage, instigator, SkillNames.Parring, MainStats.Parry);
+            _defenceResults.Add(attackId, TryDefenceSkill(chance, damage, instigator, SkillNames.Parring, MainStats.Parry));
         }
 
         private void UpdateArmorUIText()
@@ -59,21 +80,20 @@ namespace RPG.Combat
             armorUIText.text = $"{_stats.GetStat(MainStats.Armor)}";
         }
 
-        private void TryDefenceSkill(float chance, float damage, GameObject instigator, SkillNames skill, MainStats stat)
+        private bool TryDefenceSkill(float chance, float damage, GameObject instigator, SkillNames skill, MainStats stat)
         {
             var successChance = _stats.GetSkillLevel(skill) * _stats.GetStat(stat) / 100 + _stats.GetStat(MainStats.Dexterity) / 10;
             var result = Random.Range(0, chance + successChance);
             Debug.Log($"{gameObject.name} : TryDefence: Hit:{chance} SuccessChance: {successChance} / Random val: {result}");
             if (result < chance)
             {
-                instigator.GetComponent<BaseStats>().SkillGain(instigator.GetComponent<Fighter>().GetWeaponSkill());
-                GetComponent<Health>().TakeDamage(damage - _stats.GetStat(MainStats.Armor));
-                Debug.Log($"{gameObject.name}: Damage: {damage} Armor: {_stats.GetStat(MainStats.Armor)}");
+                return false;
             }
             else
             {
                 _stats.SkillGain(skill);
                 _fighter.Defend(skill);
+                return true;
             }
         }
 

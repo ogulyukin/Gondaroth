@@ -36,7 +36,7 @@ namespace RPG.SceneManagement
 
         private void PrepareFideInOut()
         {
-            if (_canvasGroup == null) _canvasGroup = GetComponent<CanvasGroup>();
+            if (ReferenceEquals(_canvasGroup, null)) _canvasGroup = GetComponent<CanvasGroup>();
             if (_currentActiveFade != null)
             {
                 StopCoroutine(_currentActiveFade);
@@ -45,7 +45,7 @@ namespace RPG.SceneManagement
 
         public IEnumerator FadeIn()
         {
-            if(_canvasGroup == null) _canvasGroup = GetComponent<CanvasGroup>();
+            if(ReferenceEquals(_canvasGroup, null)) _canvasGroup = GetComponent<CanvasGroup>();
             if (_currentActiveFade != null)
             {
                 StopCoroutine(_currentActiveFade);
@@ -61,7 +61,7 @@ namespace RPG.SceneManagement
             {
                 _canvasGroup.alpha += (Time.deltaTime / _fadingOutTime) * (inOutFade ? 1 : -1);
                 yield return null;
-                if (_canvasGroup == null) break;
+                if (ReferenceEquals(_canvasGroup, null)) break;
             }
         }
     }

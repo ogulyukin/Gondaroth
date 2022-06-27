@@ -1,12 +1,12 @@
 using System;
 using RPG.Attributes;
 using RPG.Combat;
+using RPG.Magic;
 using RPG.Movement;
 using RPG.UI;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace RPG.Control
 {
@@ -22,6 +22,7 @@ namespace RPG.Control
         [SerializeField] private float raycastRadius = 1f;
         [SerializeField] private GameObject pauseCanvas;
         private bool _isDragging;
+        private bool _warMode;
         private MagicControl _magicControl;
         private NavMeshAgent _navMeshAgent;
 
@@ -36,6 +37,8 @@ namespace RPG.Control
         [SerializeField] private CursorMapping[] cursorMappings;
         private Mover _mover;
         private Health _health;
+        private static readonly int CombatStyle = Animator.StringToHash("CombatStyle");
+
         private void Awake()
         {
             _mover = GetComponent<Mover>();
@@ -47,7 +50,7 @@ namespace RPG.Control
         {
             if(Input.GetKeyUp(KeyCode.Escape)) pauseCanvas.GetComponent<PauseCanvas>().PauseCanvasHandler();
             if(Input.GetKeyUp(KeyCode.R)) _mover.ToggleNavMeshSpeed();
-            if(GetComponent<Health>().IsAlive()) Interaction();
+            if(_health.IsAlive()) Interaction();
         }
 
         
@@ -59,6 +62,7 @@ namespace RPG.Control
                 SetCursor(CursorType.None);
                 return;
             }
+            if(Input.GetKeyUp(KeyCode.Tab)) ToggleWarMode();
             if(InteractWithComponent()) return;
             //if(InteractWithCombat()) return;
             if(InteractWithMovement()) return;
@@ -187,6 +191,12 @@ namespace RPG.Control
                 }
             }
             return cursorMappings[0];
+        }
+
+        private void ToggleWarMode()
+        {
+            GetComponent<Animator>().SetFloat(CombatStyle, _warMode ? 1f : 0f);
+            _warMode = !_warMode;
         }
     }
 }

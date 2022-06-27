@@ -14,7 +14,7 @@ namespace RPG.Combat
         [SerializeField] private Projectile projectile;
         [SerializeField] private AnimatorOverrideController animatorOverride;
         [SerializeField] private float weaponDamage;
-        [SerializeField] private float weaponParryChance = 0;
+        [SerializeField] private float weaponParryChance;
         [SerializeField] private float avoidChance = 50f;
         [SerializeField] private float weaponRange;
         [SerializeField] private float weaponTimeout;
@@ -30,7 +30,7 @@ namespace RPG.Combat
 
         public bool CanAvoid()
         {
-            return weaponPrefab == null ? true : false;
+            return ReferenceEquals(weaponPrefab, null);
         }
 
         public float GetWeaponDamage()

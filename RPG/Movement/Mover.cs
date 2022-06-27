@@ -1,17 +1,14 @@
-using System;
 using System.Collections.Generic;
 using RPG.Attributes;
 using RPG.Core;
 using Saving;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.Serialization;
 
 namespace RPG.Movement
 {
     public class Mover : MonoBehaviour , IAction, ISaveable
     {
-        [FormerlySerializedAs("Target")] [SerializeField] private Transform target;
         [SerializeField] private float maxNavMeshPathLength = 40f;
         [SerializeField] private float maxSpeed = 6.74f;
         [SerializeField] private float walkSpeed = 1.385f;
@@ -19,10 +16,12 @@ namespace RPG.Movement
         [SerializeField] private float runPrice = 1;
         private bool _isRunning;
         private NavMeshAgent _navMeshAgent;
-        private static readonly int ForwardSpeed = Animator.StringToHash("Locomotion");
         private Health _health;
         private Stamina _stamina;
-        private Vector3 _previonusPosition;
+        private Vector3 _previousPosition;
+        private ActionScheduler _actionScheduler;
+        private Animator _animator;
+        private static readonly int Locomotion = Animator.StringToHash("Locomotion");
 
         private void Awake()
         {
@@ -31,19 +30,21 @@ namespace RPG.Movement
             _stamina = GetComponent<Stamina>();
             if(runIcon != null) runIcon.SetActive(false);
             _navMeshAgent.speed = walkSpeed;
-            _previonusPosition = transform.position;
+            _previousPosition = transform.position;
+            _actionScheduler = GetComponent<ActionScheduler>();
+            _animator = GetComponent<Animator>();
         }
 
         private void Update()
         {
             _navMeshAgent.enabled = _health.IsAlive();
             UpdateAnimator();
-            if (_isRunning && _previonusPosition != transform.position)
+            if (_isRunning && _previousPosition != transform.position)
             {
                 if(!_stamina.UseSkill(runPrice)) SetNavMeshSpeed(false);
             }
 
-            _previonusPosition = transform.position;
+            _previousPosition = transform.position;
         }
         
         public void ToggleNavMeshSpeed()
@@ -87,13 +88,13 @@ namespace RPG.Movement
 
         public void StartMoving(Vector3 destination)
         {
-            GetComponent<ActionScheduler>().StartAction(this);
+            _actionScheduler.StartAction(this);
             Moveto(destination);
         }
 
         public void StartRotation(bool direction)
         {
-            GetComponent<ActionScheduler>().StartAction(this);
+            _actionScheduler.StartAction(this);
             var rotation = new Vector3(0, direction ? 5 : -5, 0);
             transform.Rotate(rotation);
         }
@@ -107,7 +108,7 @@ namespace RPG.Movement
         private void UpdateAnimator()
         {
             Vector3 velocity = transform.InverseTransformDirection(_navMeshAgent.velocity);
-            GetComponent<Animator>().SetFloat("Locomotion", velocity.z);
+            _animator.SetFloat(Locomotion, velocity.z);
         }
 
         public void Cancel()
@@ -128,7 +129,6 @@ namespace RPG.Movement
 
         public void RestoreState(object state)
         {
-            //var data = (Dictionary<string, object>)state;
             if (state is Dictionary<string, object> data)
             {
                 _navMeshAgent.enabled = false;

@@ -20,6 +20,9 @@ namespace RPG.Attributes
         private float _healthPoints = -1f;
         private bool _isAlive = true;
         private  BaseStats _baseStat;
+        private static readonly int Death = Animator.StringToHash("Death");
+        private static readonly int ShowDamage = Animator.StringToHash("ShowDamage");
+
         [System.Serializable]
         public class TakeDamageEvent: UnityEvent<float>{}
         
@@ -61,7 +64,7 @@ namespace RPG.Attributes
         {
             var instance = Instantiate(damageText, transform);
             instance.GetComponentInChildren<TextMeshProUGUI>().text = damage.ToString();
-            instance.GetComponent<Animator>().SetTrigger("ShowDamage");
+            instance.GetComponent<Animator>().SetTrigger(ShowDamage);
             Debug.Log($"{gameObject.name} Instantiate damage text {damage}");
         }
 
@@ -108,7 +111,7 @@ namespace RPG.Attributes
         private void Die()
         {
             GetComponent<ActionScheduler>().CancelCurrentAction();
-            GetComponent<Animator>().SetTrigger("Death");
+            GetComponent<Animator>().SetTrigger(Death);
             die?.Invoke();
             if(unitCanvas != null) unitCanvas.SetActive(false);
             GetComponent<Fighter>().enabled = false;

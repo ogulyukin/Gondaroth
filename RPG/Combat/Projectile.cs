@@ -61,7 +61,7 @@ namespace RPG.Combat
             if (hitTarget != null)
             {
                 if(!hitTarget.IsAlive()) return;
-                hitTarget.GetComponent<Defence>().GetAttack(1000, _damage, _instigator);
+                hitTarget.GetComponent<Defence>().GotHit("Projectile", _damage, _instigator);
             }
 
             flySpeed = 0;

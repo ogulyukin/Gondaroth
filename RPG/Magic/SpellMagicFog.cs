@@ -1,70 +1,44 @@
-using RPG.Attributes;
+using System;
+using RPG.Combat;
 using RPG.Core;
-using RPG.Spells;
 using UnityEngine;
 
-namespace RPG.Combat
+namespace RPG.Magic
 {
-    public class MagicControl : MonoBehaviour, IAction
+    public class SpellMagicFog : SpellTemplate, ISpell
     {
-        [SerializeField] private float manaCostForSpell = 60.0f;
         [SerializeField] private Material magicFogMaterial;
         [SerializeField] private float fogStartSize = 5;
         [SerializeField] private Color fogColor = Color.white;
         [SerializeField] private Color fogLining = Color.gray;
-        [SerializeField] private float fogTime = 10f;
-        private Mana m_Mana;
-        private Health m_Health;
-        private GameObject m_MagicFog;
-        private float m_MagicFogTime = 0;
+        
+        private GameObject _magicFog;
+        private float _magicFogTime = 0;
+        private SpellEffect _spellEffect;
 
-        private void Start()
+        private void Awake()
         {
-            m_Health = GetComponent<Health>();
-            m_Mana = GetComponent<Mana>();
+            _spellEffect = GetComponent<SpellEffect>();
         }
+
         private void Update()
         {
-            if (m_MagicFog != null)
+            if (!ReferenceEquals(_magicFog, null))
             {
-                m_MagicFogTime += Time.deltaTime;
-                if (m_MagicFogTime > (fogTime + 1)) Destroy(m_MagicFog);
+                _magicFogTime += Time.deltaTime;
+                if (_magicFogTime > (_spellEffect.duration + 1)) Destroy(_magicFog);
             }
         }
-        public bool CanCastSpell()
-        {
-            return (m_Health.IsAlive() && m_Mana.CheckManaAvaible(manaCostForSpell));
-        }
-        public void Cancel()
-        {
-            GetComponent<Animator>().ResetTrigger("Cast01");
-            GetComponent<Animator>().ResetTrigger("Cast2Start");
-        }
-    
-        public void TriggerCast()
-        {
-            m_Mana.SpendMana(manaCostForSpell);
-            GetComponent<ActionScheduler>().StartAction(this);
-            GetComponent<Animator>().SetTrigger("Cast01");
-            //GenerateMagicFog();
-        }
-        public void TriggerCast2()
-        {
-            m_Mana.SpendMana(manaCostForSpell);
-            GetComponent<ActionScheduler>().StartAction(this);
-            GetComponent<Animator>().SetTrigger("Cast2Start");
-            //GetComponent<Health>().RestoreHeath(20);
-        }
 
-        private void GenerateMagicFog()
+        public void Cast(Transform target, Transform caster)
         {
             var cloudGO = new GameObject()
             {
-                name = $"MassSpell",
+                name = "MassSpell",
                 transform =
                 {
-                    rotation = GetComponent<CombatTarget>().transform.rotation,
-                    position = GetComponent<CombatTarget>().transform.position,
+                    rotation = caster.rotation,
+                    position = caster.position,
                 }
             };
             var fogSystem = cloudGO.AddComponent<ParticleSystem>();
@@ -75,7 +49,7 @@ namespace RPG.Combat
             
             var main = fogSystem.main;
             main.loop = false;
-            main.startLifetime = fogTime;
+            main.startLifetime = duration;
             main.startSpeed = 0;
             main.startSize = fogStartSize;
             main.startColor = fogColor;
@@ -95,18 +69,35 @@ namespace RPG.Combat
             fogSystem.SetParticles(particles, particles.Length);
             
             cloudGO.transform.localScale = new Vector3(1, 1, 1);
-            m_MagicFog = cloudGO;
-            m_MagicFogTime = 0;
+            _magicFog = cloudGO;
+            _magicFogTime = 0;
             var spellCollider = cloudGO.AddComponent<CapsuleCollider>();
             spellCollider.radius = 8f;
             spellCollider.height = 4f;
             spellCollider.isTrigger = true;
             spellCollider.enabled = true;
             
-            var spellType = cloudGO.AddComponent<Spell>();
-            spellType.spellType = Core.Spells.MagicFog;
-            spellType.duration = 10;
-            spellType.caster = UnitTypes.Elves;
+            var spellType = cloudGO.AddComponent<SpellEffect>();
+            //spellType.spellType = Core.Spells.MagicFog;
+            CreteMagicEffect(spellType, caster.GetComponent<CombatTarget>().GetUnitType());
+        }
+        
+        public bool CanCast(float mana)
+        {
+            return mana >= manaCost;
+        }
+
+        private void CreteMagicEffect(SpellEffect spellType, UnitTypes caster)
+        {
+            spellType.duration = duration;
+            spellType.caster = caster;
+            spellType.targets = targets;
+            spellType.charmEffect = charmEffect;
+            spellType.damageEffect = damageEffect;
+            spellType.healEffect = healEffect;
+            spellType.sleepEffect = sleepEffect;
+            spellType.stunningEffect = stunningEffect;
+            spellType.silenceEffect = silenceEffect;
         }
     }
 }

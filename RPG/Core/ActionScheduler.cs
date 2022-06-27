@@ -11,18 +11,6 @@ namespace RPG.Core
         Mount
     }
 
-    public enum UnitStates
-    {
-        Moving,
-        Fighting,
-        UsingSkill,
-        Iddle,
-        Confusing,
-        Blocking,
-        Dodging,
-        GotHit
-    }
-
     public enum Spells
     {
         MagicFog,
@@ -31,15 +19,15 @@ namespace RPG.Core
     }
     public class ActionScheduler : MonoBehaviour
     {
-        private IAction currentAction;
+        private IAction _currentAction;
         public void StartAction(IAction action)
         {
-            if(currentAction == action) return;
-            if (currentAction != null)
+            if(_currentAction == action) return;
+            if (!ReferenceEquals(_currentAction, null))
             {
-                currentAction.Cancel();
+                _currentAction.Cancel();
             }
-            currentAction = action;
+            _currentAction = action;
         }
 
         public void CancelCurrentAction()
