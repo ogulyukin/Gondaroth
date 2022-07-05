@@ -23,6 +23,8 @@ namespace RPG.Control
         [SerializeField] private GameObject pauseCanvas;
         private bool _isDragging;
         private bool _warMode;
+        private bool _isSleeping;
+        private Animator _animator;
         private MagicControl _magicControl;
         private NavMeshAgent _navMeshAgent;
 
@@ -45,10 +47,16 @@ namespace RPG.Control
             _health = GetComponent<Health>();
             _magicControl = GetComponent<MagicControl>();
             _navMeshAgent = GetComponent<NavMeshAgent>();
+            _animator = GetComponent<Animator>();
         }
         private void Update()
         {
             if(Input.GetKeyUp(KeyCode.Escape)) pauseCanvas.GetComponent<PauseCanvas>().PauseCanvasHandler();
+            if (!_health.IsAlive())
+            {
+                SetCursor(CursorType.None);
+                return;
+            }
             if(Input.GetKeyUp(KeyCode.R)) _mover.ToggleNavMeshSpeed();
             if(_health.IsAlive()) Interaction();
         }
@@ -56,12 +64,12 @@ namespace RPG.Control
         
         private void Interaction()
         {
-            if (InteractWithUI()) return;
-            if (!_health.IsAlive())
+            if (Input.GetKeyUp(KeyCode.Z))
             {
-                SetCursor(CursorType.None);
-                return;
+                ToggleSleepMode();
             }
+            if(_isSleeping) return;
+            if (InteractWithUI()) return;
             if(Input.GetKeyUp(KeyCode.Tab)) ToggleWarMode();
             if(InteractWithComponent()) return;
             //if(InteractWithCombat()) return;
@@ -195,8 +203,16 @@ namespace RPG.Control
 
         private void ToggleWarMode()
         {
-            GetComponent<Animator>().SetFloat(CombatStyle, _warMode ? 1f : 0f);
+            _animator.SetFloat(CombatStyle, _warMode ? 1f : 0f);
             _warMode = !_warMode;
+        }
+        
+        private void ToggleSleepMode()
+        {
+            Debug.Log(_isSleeping ? "Woke Up!" : "Go Sleep!");
+            _animator.ResetTrigger(_isSleeping ? "Sleep" : "WokeUp");
+            _animator.SetTrigger(_isSleeping ? "WokeUp"  : "Sleep");
+            _isSleeping = !_isSleeping;
         }
     }
 }

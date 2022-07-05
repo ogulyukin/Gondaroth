@@ -32,7 +32,7 @@ namespace RPG.Magic
 
         public void Cast(Transform target, Transform caster)
         {
-            var cloudGO = new GameObject()
+            var cloudGo = new GameObject()
             {
                 name = "MassSpell",
                 transform =
@@ -41,8 +41,8 @@ namespace RPG.Magic
                     position = caster.position,
                 }
             };
-            var fogSystem = cloudGO.AddComponent<ParticleSystem>();
-            var fogRend = cloudGO.GetComponent<Renderer>();
+            var fogSystem = cloudGo.AddComponent<ParticleSystem>();
+            var fogRend = cloudGo.GetComponent<Renderer>();
             fogRend.material = magicFogMaterial;
             fogRend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             fogRend.receiveShadows = false;
@@ -68,16 +68,16 @@ namespace RPG.Magic
             }
             fogSystem.SetParticles(particles, particles.Length);
             
-            cloudGO.transform.localScale = new Vector3(1, 1, 1);
-            _magicFog = cloudGO;
+            cloudGo.transform.localScale = new Vector3(1, 1, 1);
+            _magicFog = cloudGo;
             _magicFogTime = 0;
-            var spellCollider = cloudGO.AddComponent<CapsuleCollider>();
+            var spellCollider = cloudGo.AddComponent<CapsuleCollider>();
             spellCollider.radius = 8f;
             spellCollider.height = 4f;
             spellCollider.isTrigger = true;
             spellCollider.enabled = true;
             
-            var spellType = cloudGO.AddComponent<SpellEffect>();
+            var spellType = cloudGo.AddComponent<SpellEffect>();
             //spellType.spellType = Core.Spells.MagicFog;
             CreteMagicEffect(spellType, caster.GetComponent<CombatTarget>().GetUnitType());
         }

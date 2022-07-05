@@ -62,6 +62,7 @@ namespace RPG.Magic
         //Animation Event
         public void SuccessfulSpellCasting()
         {
+            //Debug.Log($"{gameObject.name}: Succesfull spellcasting");
             _currentSpell.Cast(this.transform, this.transform);
         }
 
